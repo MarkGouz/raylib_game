@@ -8,7 +8,7 @@ by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit h
 */
 
 #include "raylib.h"
-
+#include <stdio.h>
 #include "resource_dir.h"	// utility header for SearchAndSetResourceDir
 
 typedef enum GameScreen { START_SCREEN, GAMEPLAY, GAME_OVER } GameScreen;
@@ -37,7 +37,8 @@ int main ()
 	float gravity = (jumpforce * jumpforce) / 800;
 	float platformSpeed = 100.0f;
 	bool isOnGround = true;
-
+	bool gameStart = false;
+	float survivalTime = 0.0f;
 
 	int platform_height = 20;
 	int num_levels = 4;
@@ -66,6 +67,7 @@ int main ()
 	// game loop
 	while (!WindowShouldClose())		// run the loop untill the user presses ESCAPE or presses the Close button on the window
 	{
+		float dt = GetFrameTime();
 		BeginDrawing();
 		ClearBackground(BLACK);
 
@@ -80,21 +82,24 @@ int main ()
 				// Reset game state here if needed
 			}
 		}  else if (currentScreen == GAMEPLAY) {
-			float dt = GetFrameTime();
-			bool collided = false;
-			for (int i = 0; i < total; i++) {
-				all_platforms[i].y += platformSpeed * dt;
-				if (all_platforms[i].y > 800) {
-					// Reset this platform to the top
-					all_platforms[i].y = 10; // Slight offset above screen
-					all_platforms[i].x = GetRandomValue(0, 5) * 200;
-					all_platforms[i].width = GetRandomValue(100, 150);
+			if (gameStart)
+			{
+				for (int i = 0; i < total; i++) {
+					all_platforms[i].y += platformSpeed * dt;
+					if (all_platforms[i].y > 800) {
+						// Reset this platform to the top
+						all_platforms[i].y = 10; // Slight offset above screen
+						all_platforms[i].x = GetRandomValue(0, 5) * 200;
+						all_platforms[i].width = GetRandomValue(100, 150);
+					}
 				}
+				platformSpeed += 0.1f;
+				jumpforce -= 0.7f;
+				gravity = (jumpforce * jumpforce) / 800;
+				speed += 0.5f;
+				survivalTime += dt;
 			}
-			platformSpeed += 0.1f;
-			jumpforce -= 0.7f;
-			gravity = (jumpforce * jumpforce) / 800;
-			speed += 0.5f;
+			bool collided = false;
 			count = 0;
 			for (int i = 0; i < num_levels; i++) {
 				for (int j = 0; j < num_platforms_arr[i]; j++) 
@@ -123,6 +128,7 @@ int main ()
 			if (IsKeyPressed(KEY_SPACE) && isOnGround){
 				velocityY = jumpforce;
 				isOnGround = false;
+				gameStart = true;
 			}
 			if (!isOnGround)
 			{
@@ -131,6 +137,8 @@ int main ()
 				if (player.y >= 750)
 				{
 					currentScreen = GAME_OVER;
+					gameStart = false;
+					survivalTime = 0.0f;
 				}
 				
 			}
@@ -146,6 +154,9 @@ int main ()
 			// draw some text using the default font
 			BeginDrawing();
 			ClearBackground(BLACK);
+			char scoreText[64];
+			sprintf(scoreText, "Time: %.2f", survivalTime);
+			DrawText(scoreText, 20, 20, 20, WHITE);
 			count = 0;
 			for (int i = 0; i < num_levels; i++) {
 				for (int j = 0; j < num_platforms_arr[i]; j++) {
