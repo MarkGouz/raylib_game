@@ -92,6 +92,10 @@ If you need to build for a different OpenGL version than the default (OpenGL 3.3
 ## For OpenGLES 3.0
 `--graphics=opengles3`
 
+## Attribution
+
+This project includes code derived from work by Jeffery Myers, originally licensed under the zlib/libpng-style license. See LICENSE for details.
+
 # License
 Copyright (c) 2020-2025 Jeffery Myers
 
